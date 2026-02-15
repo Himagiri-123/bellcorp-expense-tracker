@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://bellcorp-expense-tracker-ee9i.onrender.com',
+  // నీ Render లింక్ చివరన '/api' ఉండాలి
+  baseURL: 'https://bellcorp-expense-tracker-ee9i.onrender.com/api', 
 });
 
 API.interceptors.request.use((req) => {

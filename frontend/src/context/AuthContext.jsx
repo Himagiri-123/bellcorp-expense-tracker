@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../api'; // Import our configured API
 import Swal from 'sweetalert2';
 
 const AuthContext = createContext();
@@ -19,7 +19,8 @@ export const AuthProvider = ({ children }) => {
   // Register Function
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/users', {
+      // Use API instead of axios
+      const response = await API.post('/users', {
         name,
         email,
         password,
@@ -33,7 +34,6 @@ export const AuthProvider = ({ children }) => {
           confirmButtonColor: '#4f46e5',
           timer: 3000
         }).then(() => {
-            // Redirect to Login instead of Auto-login
             navigate('/login');
         });
       }
@@ -50,7 +50,8 @@ export const AuthProvider = ({ children }) => {
   // Login Function
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/users/login', {
+      // Use API instead of axios
+      const response = await API.post('/users/login', {
         email,
         password,
       });

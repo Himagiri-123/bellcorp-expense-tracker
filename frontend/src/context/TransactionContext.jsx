@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useCallback } from 'react';
-import axios from 'axios';
+import API from '../api'; // Import our configured API
 import AuthContext from './AuthContext';
 import Swal from 'sweetalert2';
 
@@ -15,19 +15,19 @@ export const TransactionProvider = ({ children }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  // Fetch Transactions
   const fetchTransactions = useCallback(async (filters, isLoadMore = false) => {
     if (!user) return;
     const { page, limit, search, category, startDate, endDate, minAmount, maxAmount } = filters;
     try {
       setLoading(true);
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
       
-      let url = `http://localhost:5000/api/transactions?page=${page}&limit=${limit}&search=${search}&category=${category}`;
+      let url = `/transactions?page=${page}&limit=${limit}&search=${search}&category=${category}`;
       if(startDate && endDate) url += `&startDate=${startDate}&endDate=${endDate}`;
       if(minAmount) url += `&minAmount=${minAmount}`;
       if(maxAmount) url += `&maxAmount=${maxAmount}`;
 
-      const response = await axios.get(url, config);
+      const response = await API.get(url);
       
       if (isLoadMore) {
           setTransactions(prev => [...prev, ...response.data.transactions]);
@@ -44,11 +44,11 @@ export const TransactionProvider = ({ children }) => {
     }
   }, [user]);
 
+  // Fetch Recent
   const fetchRecentTransactions = useCallback(async () => {
     if (!user) return;
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const response = await axios.get(`http://localhost:5000/api/transactions?page=1&limit=5`, config);
+      const response = await API.get(`/transactions?page=1&limit=5`);
       setRecentTransactions(response.data.transactions);
       setTotalRecords(response.data.totalRecords);
     } catch (error) {
@@ -56,21 +56,21 @@ export const TransactionProvider = ({ children }) => {
     }
   }, [user]);
 
+  // Fetch Summary
   const fetchSummary = useCallback(async () => {
     if (!user) return;
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const response = await axios.get('http://localhost:5000/api/transactions/summary', config);
+      const response = await API.get('/transactions/summary');
       setSummaryData(response.data);
     } catch (error) {
       console.error("Summary Error:", error);
     }
   }, [user]);
 
+  // Add Transaction
   const addTransaction = async (newTransaction, refreshCallback) => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('http://localhost:5000/api/transactions', newTransaction, config);
+      await API.post('/transactions', newTransaction);
       
       Swal.fire({
           icon: 'success',
@@ -93,10 +93,10 @@ export const TransactionProvider = ({ children }) => {
     }
   };
 
+  // Update Transaction
   const updateTransaction = async (id, updatedData, refreshCallback) => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/transactions/${id}`, updatedData, config);
+      await API.put(`/transactions/${id}`, updatedData);
       
       Swal.fire({
         icon: 'success',
@@ -118,6 +118,7 @@ export const TransactionProvider = ({ children }) => {
     }
   };
 
+  // Delete Transaction
   const deleteTransaction = async (id, refreshCallback) => {
     Swal.fire({
         title: 'Are you sure?',
@@ -130,8 +131,7 @@ export const TransactionProvider = ({ children }) => {
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                await axios.delete(`http://localhost:5000/api/transactions/${id}`, config);
+                await API.delete(`/transactions/${id}`);
                 
                 Swal.fire(
                     'Deleted!',
